@@ -1,0 +1,59 @@
+import { Navbar } from "@/components/Navbar";
+import { MapPin } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+const Locations = () => {
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      
+      <section className="border-b border-border bg-muted/30 py-16">
+        <div className="container mx-auto px-4">
+          <h1 className="mb-4 text-4xl font-bold text-foreground md:text-5xl">
+            Địa Điểm Quanh Ta
+          </h1>
+          <p className="mb-8 text-lg text-muted-foreground">
+            Tìm kiếm quán ăn ngon gần bạn với đánh giá và món ăn đặc sắc
+          </p>
+
+          <div className="relative mx-auto flex max-w-2xl items-center overflow-hidden rounded-full border-2 border-secondary/20 bg-card shadow-lg">
+            <Input
+              type="text"
+              placeholder="Nhập địa điểm hoặc tên quán..."
+              className="h-12 border-0 bg-transparent px-6 focus-visible:ring-0"
+            />
+            <Button size="lg" className="h-12 rounded-l-none rounded-r-full bg-secondary px-6 hover:bg-secondary/90">
+              <MapPin className="mr-2 h-5 w-5" />
+              Tìm
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <section className="container mx-auto px-4 py-16">
+        <div className="text-center">
+          <div className="mb-6 inline-flex h-24 w-24 items-center justify-center rounded-full bg-secondary/10">
+            <span className="text-5xl">📍</span>
+          </div>
+          <h2 className="mb-4 text-2xl font-bold text-foreground">
+            Đang Phát Triển
+          </h2>
+          <p className="text-muted-foreground">
+            Tính năng tìm kiếm địa điểm đang được phát triển. Quay lại sau nhé!
+          </p>
+        </div>
+      </section>
+
+      <footer className="border-t border-border bg-muted/30 py-8">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-muted-foreground">
+            © 2024 Hôm Nay Ăn Gì. Khám phá thế giới ẩm thực Việt Nam.
+          </p>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default Locations;
