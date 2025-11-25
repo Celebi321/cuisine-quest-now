@@ -34,10 +34,9 @@ export const Hero = () => {
 
           {/* Quick Actions */}
           <div className="flex flex-wrap justify-center gap-4">
-            <Button
-              size="lg"
-              variant="outline"
-              className="group h-auto flex-col gap-2 rounded-2xl p-6 transition-all hover:scale-105 hover:border-primary hover:bg-primary/5"
+            <a
+              href="/recipes"
+              className="group h-auto flex-col gap-2 rounded-2xl p-6 transition-all hover:scale-105 hover:border-primary hover:bg-primary/5 border border-border bg-card flex items-center"
             >
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-white transition-all group-hover:scale-110">
                 <svg className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
@@ -45,12 +44,11 @@ export const Hero = () => {
                 </svg>
               </div>
               <span className="font-semibold">Công Thức Nấu</span>
-            </Button>
+            </a>
 
-            <Button
-              size="lg"
-              variant="outline"
-              className="group h-auto flex-col gap-2 rounded-2xl p-6 transition-all hover:scale-105 hover:border-secondary hover:bg-secondary/5"
+            <a
+              href="/locations"
+              className="group h-auto flex-col gap-2 rounded-2xl p-6 transition-all hover:scale-105 hover:border-secondary hover:bg-secondary/5 border border-border bg-card flex items-center"
             >
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-secondary text-white transition-all group-hover:scale-110">
                 <svg className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
@@ -58,12 +56,11 @@ export const Hero = () => {
                 </svg>
               </div>
               <span className="font-semibold">Địa Điểm Gần Đây</span>
-            </Button>
+            </a>
 
-            <Button
-              size="lg"
-              variant="outline"
-              className="group h-auto flex-col gap-2 rounded-2xl p-6 transition-all hover:scale-105 hover:border-accent hover:bg-accent/5"
+            <button
+              onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+              className="group h-auto flex-col gap-2 rounded-2xl p-6 transition-all hover:scale-105 hover:border-accent hover:bg-accent/5 border border-border bg-card flex items-center"
             >
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-white transition-all group-hover:scale-110">
                 <svg className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
@@ -71,7 +68,7 @@ export const Hero = () => {
                 </svg>
               </div>
               <span className="font-semibold">Gợi Ý Ngẫu Nhiên</span>
-            </Button>
+            </button>
           </div>
         </div>
       </div>
