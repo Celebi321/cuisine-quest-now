@@ -9,6 +9,7 @@ interface DishCardProps {
   difficulty?: string;
   time?: string;
   category?: string;
+  onClick?: () => void;
 }
 
 export const DishCard = ({
@@ -18,9 +19,13 @@ export const DishCard = ({
   difficulty,
   time,
   category,
+  onClick,
 }: DishCardProps) => {
   return (
-    <Card className="group overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1">
+    <Card 
+      className="group cursor-pointer overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1"
+      onClick={onClick}
+    >
       <div className="relative aspect-[4/3] overflow-hidden">
         <img
           src={image}
