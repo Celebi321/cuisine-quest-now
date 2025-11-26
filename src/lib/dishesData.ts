@@ -205,3 +205,103 @@ export const tagLabels: Record<DishTag, string> = {
   soup: "Nước",
   "street-food": "Đường Phố",
 };
+
+// Meal interface - bữa ăn hoàn chỉnh
+export interface Meal {
+  id: string;
+  name: string;
+  description: string;
+  dishes: Dish[];
+  totalCalories: number;
+  totalCost: "low" | "mid" | "high";
+  totalTime: string;
+  tags: DishTag[];
+  mealType: "breakfast" | "lunch" | "dinner";
+}
+
+export const predefinedMeals: Meal[] = [
+  {
+    id: "meal-1",
+    name: "Bữa Sáng Việt Nam",
+    description: "Bữa sáng truyền thống với phở và bánh mì",
+    dishes: [
+      allDishes.find(d => d.id === "pho-bo")!,
+      allDishes.find(d => d.id === "goi-cuon")!,
+    ],
+    totalCalories: 650,
+    totalCost: "mid",
+    totalTime: "20 phút",
+    tags: ["vietnamese", "healthy", "soup"],
+    mealType: "breakfast",
+  },
+  {
+    id: "meal-2",
+    name: "Bữa Trưa Nhanh",
+    description: "Bữa trưa đầy đủ với cơm và món phụ",
+    dishes: [
+      allDishes.find(d => d.id === "com-tam")!,
+      allDishes.find(d => d.id === "cha-gio")!,
+    ],
+    totalCalories: 1000,
+    totalCost: "mid",
+    totalTime: "25 phút",
+    tags: ["vietnamese", "rice", "quick"],
+    mealType: "lunch",
+  },
+  {
+    id: "meal-3",
+    name: "Bữa Tối Nhẹ Nhàng",
+    description: "Bữa tối healthy với bún và gỏi cuốn",
+    dishes: [
+      allDishes.find(d => d.id === "bun-cha")!,
+      allDishes.find(d => d.id === "goi-cuon")!,
+    ],
+    totalCalories: 650,
+    totalCost: "mid",
+    totalTime: "25 phút",
+    tags: ["vietnamese", "healthy", "noodles"],
+    mealType: "dinner",
+  },
+  {
+    id: "meal-4",
+    name: "Combo Đường Phố",
+    description: "Trải nghiệm ẩm thực đường phố Việt Nam",
+    dishes: [
+      allDishes.find(d => d.id === "banh-mi")!,
+      allDishes.find(d => d.id === "cha-gio")!,
+    ],
+    totalCalories: 750,
+    totalCost: "low",
+    totalTime: "15 phút",
+    tags: ["vietnamese", "street-food", "cheap", "quick"],
+    mealType: "lunch",
+  },
+  {
+    id: "meal-5",
+    name: "Bữa Sáng Nhanh",
+    description: "Bữa sáng nhanh gọn với xôi và bánh mì",
+    dishes: [
+      allDishes.find(d => d.id === "xoi-man")!,
+      allDishes.find(d => d.id === "banh-mi")!,
+    ],
+    totalCalories: 750,
+    totalCost: "low",
+    totalTime: "15 phút",
+    tags: ["vietnamese", "quick", "cheap"],
+    mealType: "breakfast",
+  },
+  {
+    id: "meal-6",
+    name: "Bữa Trưa Đầy Đủ",
+    description: "Bữa trưa thịnh soạn với món nước và món chiên",
+    dishes: [
+      allDishes.find(d => d.id === "bun-bo-hue")!,
+      allDishes.find(d => d.id === "banh-xeo")!,
+    ],
+    totalCalories: 1000,
+    totalCost: "mid",
+    totalTime: "35 phút",
+    tags: ["vietnamese", "noodles", "soup"],
+    mealType: "lunch",
+  },
+];

@@ -2,26 +2,32 @@ import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { DishCard } from "@/components/DishCard";
+import { MealCard } from "@/components/MealCard";
 import { RandomDishModal } from "@/components/RandomDishModal";
+import { RandomMealModal } from "@/components/RandomMealModal";
 import { DishDetailModal } from "@/components/DishDetailModal";
 import { FilterSection } from "@/components/FilterSection";
 import { MoodSelector } from "@/components/MoodSelector";
 import { StatsSection } from "@/components/StatsSection";
 import { Footer } from "@/components/Footer";
-import { allDishes, Dish, DishTag } from "@/lib/dishesData";
+import { allDishes, Dish, DishTag, predefinedMeals, Meal } from "@/lib/dishesData";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useMealHistory } from "@/hooks/useMealHistory";
 import { Button } from "@/components/ui/button";
-import { Heart, History, Sparkles } from "lucide-react";
+import { Heart, History, Sparkles, UtensilsCrossed } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [isRandomModalOpen, setIsRandomModalOpen] = useState(false);
+  const [isRandomMealModalOpen, setIsRandomMealModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
+  const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
   const [selectedTags, setSelectedTags] = useState<DishTag[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showMeals, setShowMeals] = useState(false);
   
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
   const { history, addToHistory, clearHistory } = useMealHistory();
@@ -44,12 +50,31 @@ const Index = () => {
     return filteredDishes[Math.floor(Math.random() * filteredDishes.length)];
   };
 
+  const getRandomMeal = () => {
+    const meals = predefinedMeals;
+    if (meals.length === 0) return null;
+    return meals[Math.floor(Math.random() * meals.length)];
+  };
+
   const handleRandomize = () => {
     const dish = getRandomDish(selectedTags.length > 0 ? selectedTags : undefined);
     if (dish) {
       setSelectedDish(dish);
       setIsRandomModalOpen(true);
       addToHistory(dish.id, dish.title);
+    }
+  };
+
+  const handleRandomMeal = () => {
+    const meal = getRandomMeal();
+    if (meal) {
+      setSelectedMeal(meal);
+      setIsRandomMealModalOpen(true);
+      meal.dishes.forEach(dish => addToHistory(dish.id, dish.title));
+      toast({
+        title: "Bữa ăn hoàn chỉnh cho bạn! 🍽️",
+        description: meal.name,
+      });
     }
   };
 
@@ -98,19 +123,42 @@ const Index = () => {
 
   const filteredDishes = allDishes.filter(dish => {
     if (showFavoritesOnly && !isFavorite(dish.id)) return false;
+    if (searchQuery && !dish.title.toLowerCase().includes(searchQuery.toLowerCase()) && 
+        !dish.description.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     if (selectedTags.length === 0) return true;
     return selectedTags.some(tag => dish.tags.includes(tag));
+  });
+
+  const filteredMeals = predefinedMeals.filter(meal => {
+    if (searchQuery && !meal.name.toLowerCase().includes(searchQuery.toLowerCase()) && 
+        !meal.description.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (selectedTags.length === 0) return true;
+    return selectedTags.some(tag => meal.tags.includes(tag));
   });
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       
-      <Hero onRandomize={handleRandomize} />
+      <Hero 
+        onRandomize={handleRandomize}
+        onRandomMeal={handleRandomMeal}
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
 
       <main className="flex-1 container mx-auto px-4 py-12 space-y-12">
         {/* Quick Actions */}
         <div className="flex flex-wrap gap-3 justify-center">
+          <Button
+            variant={showMeals ? "default" : "outline"}
+            onClick={() => setShowMeals(!showMeals)}
+            className="rounded-full"
+          >
+            <UtensilsCrossed className="mr-2 h-4 w-4" />
+            {showMeals ? "Xem Món Ăn" : "Xem Bữa Ăn"}
+          </Button>
+
           <Button
             variant={showFavoritesOnly ? "default" : "outline"}
             onClick={() => {
@@ -196,58 +244,78 @@ const Index = () => {
               <StatsSection history={history} favorites={favorites} />
             )}
 
-            {/* Dishes Grid */}
+            {/* Content Grid */}
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-3xl font-bold text-foreground">
-                  {showFavoritesOnly ? "❤️ Món Yêu Thích" : "🍜 Tất cả món ăn"}
+                  {showFavoritesOnly ? "❤️ Món Yêu Thích" : showMeals ? "🍽️ Bữa Ăn Hoàn Chỉnh" : "🍜 Tất cả món ăn"}
                 </h2>
                 <p className="text-muted-foreground">
-                  {filteredDishes.length} món
+                  {showMeals ? `${filteredMeals.length} bữa` : `${filteredDishes.length} món`}
                 </p>
               </div>
 
-              {filteredDishes.length === 0 ? (
-                <div className="text-center py-16 space-y-4">
-                  <Sparkles className="h-16 w-16 mx-auto text-muted-foreground" />
-                  <p className="text-lg text-muted-foreground">
-                    {showFavoritesOnly
-                      ? "Chưa có món yêu thích. Hãy thêm vào nhé!"
-                      : "Không tìm thấy món ăn phù hợp."}
-                  </p>
-                </div>
+              {showMeals ? (
+                filteredMeals.length === 0 ? (
+                  <div className="text-center py-16 space-y-4">
+                    <Sparkles className="h-16 w-16 mx-auto text-muted-foreground" />
+                    <p className="text-lg text-muted-foreground">
+                      Không tìm thấy bữa ăn phù hợp.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredMeals.map((meal) => (
+                      <MealCard key={meal.id} meal={meal} onClick={() => {
+                        setSelectedMeal(meal);
+                        setIsRandomMealModalOpen(true);
+                      }} />
+                    ))}
+                  </div>
+                )
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredDishes.map((dish) => (
-                    <div key={dish.id} className="relative group">
-                      <DishCard
-                        {...dish}
-                        onClick={() => handleDishClick(dish)}
-                      />
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm hover:bg-background z-10"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleFavorite(dish.id);
-                          toast({
-                            title: isFavorite(dish.id) ? "Đã bỏ yêu thích" : "Đã thêm vào yêu thích!",
-                            description: dish.title,
-                          });
-                        }}
-                      >
-                        <Heart
-                          className={`h-5 w-5 ${
-                            isFavorite(dish.id)
-                              ? "fill-primary text-primary"
-                              : "text-muted-foreground"
-                          }`}
+                filteredDishes.length === 0 ? (
+                  <div className="text-center py-16 space-y-4">
+                    <Sparkles className="h-16 w-16 mx-auto text-muted-foreground" />
+                    <p className="text-lg text-muted-foreground">
+                      {showFavoritesOnly
+                        ? "Chưa có món yêu thích. Hãy thêm vào nhé!"
+                        : "Không tìm thấy món ăn phù hợp."}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredDishes.map((dish) => (
+                      <div key={dish.id} className="relative group">
+                        <DishCard
+                          {...dish}
+                          onClick={() => handleDishClick(dish)}
                         />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm hover:bg-background z-10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleFavorite(dish.id);
+                            toast({
+                              title: isFavorite(dish.id) ? "Đã bỏ yêu thích" : "Đã thêm vào yêu thích!",
+                              description: dish.title,
+                            });
+                          }}
+                        >
+                          <Heart
+                            className={`h-5 w-5 ${
+                              isFavorite(dish.id)
+                                ? "fill-primary text-primary"
+                                : "text-muted-foreground"
+                            }`}
+                          />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )
               )}
             </div>
           </>
@@ -292,6 +360,21 @@ const Index = () => {
             }}
           />
         </>
+      )}
+
+      {selectedMeal && (
+        <RandomMealModal
+          isOpen={isRandomMealModalOpen}
+          onClose={() => setIsRandomMealModalOpen(false)}
+          meal={selectedMeal}
+          onShuffle={() => {
+            const newMeal = getRandomMeal();
+            if (newMeal) {
+              setSelectedMeal(newMeal);
+              newMeal.dishes.forEach(dish => addToHistory(dish.id, dish.title));
+            }
+          }}
+        />
       )}
     </div>
   );
