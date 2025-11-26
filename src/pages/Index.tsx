@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { DishCard } from "@/components/DishCard";
 import { DishDetailModal } from "@/components/DishDetailModal";
 import { RandomDishModal } from "@/components/RandomDishModal";
+import { AIRecommendations } from "@/components/AIRecommendations";
+import { supabase } from "@/integrations/supabase/client";
 import phoImage from "@/assets/pho.jpg";
 import comTamImage from "@/assets/com-tam.jpg";
 import goiCuonImage from "@/assets/goi-cuon.jpg";
@@ -221,9 +223,19 @@ const Index = () => {
   const favoriteDishes = allDishes.slice(0, 4);
   const recipeDiscovery = allDishes.slice(4, 8);
 
-  const handleDishClick = (dish: any) => {
+  const handleDishClick = async (dish: any) => {
     setSelectedDish(dish);
     setIsDetailOpen(true);
+
+    // Track view if user is logged in
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from('dish_views').insert({
+        user_id: user.id,
+        dish_title: dish.title,
+        dish_category: dish.category
+      });
+    }
   };
 
   const handleRandomDish = () => {
@@ -241,6 +253,9 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <Hero />
+
+      {/* AI Recommendations Section */}
+      <AIRecommendations />
 
       {/* Favorite Dishes Section */}
       <section className="container mx-auto px-4 py-16">
