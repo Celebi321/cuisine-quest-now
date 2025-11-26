@@ -33,20 +33,20 @@ export const RandomDishModal = ({
         </DialogHeader>
 
         <div className="space-y-6">
-          <div className="animate-in fade-in-50 duration-500">
+          <div className="animate-slide-in">
             <DishCard {...dish} />
           </div>
 
           <div className="flex gap-3">
             <Button
               variant="outline"
-              className="flex-1"
+              className="flex-1 hover:scale-105 transition-all"
               onClick={onShuffle}
             >
               <Shuffle className="mr-2 h-4 w-4" />
               Gợi ý khác
             </Button>
-            <Button className="flex-1" onClick={onClose}>
+            <Button className="flex-1 hover:scale-105 transition-all animate-pulse-glow" onClick={onClose}>
               Quyết định rồi!
             </Button>
           </div>
