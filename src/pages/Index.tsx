@@ -1,381 +1,297 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { DishCard } from "@/components/DishCard";
-import { DishDetailModal } from "@/components/DishDetailModal";
 import { RandomDishModal } from "@/components/RandomDishModal";
-import { AIRecommendations } from "@/components/AIRecommendations";
-import { supabase } from "@/integrations/supabase/client";
-import phoImage from "@/assets/pho.jpg";
-import comTamImage from "@/assets/com-tam.jpg";
-import goiCuonImage from "@/assets/goi-cuon.jpg";
-import banhMiImage from "@/assets/banh-mi.jpg";
-import chaGioImage from "@/assets/cha-gio.jpg";
-import bunBoImage from "@/assets/bun-bo.jpg";
+import { DishDetailModal } from "@/components/DishDetailModal";
+import { FilterSection } from "@/components/FilterSection";
+import { MoodSelector } from "@/components/MoodSelector";
+import { StatsSection } from "@/components/StatsSection";
+import { Footer } from "@/components/Footer";
+import { allDishes, Dish, DishTag } from "@/lib/dishesData";
+import { useFavorites } from "@/hooks/useFavorites";
+import { useMealHistory } from "@/hooks/useMealHistory";
+import { Button } from "@/components/ui/button";
+import { Heart, History, Sparkles } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
-  const [selectedDish, setSelectedDish] = useState<any>(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [isRandomOpen, setIsRandomOpen] = useState(false);
-  const [randomDish, setRandomDish] = useState<any>(null);
+  const [isRandomModalOpen, setIsRandomModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
+  const [selectedTags, setSelectedTags] = useState<DishTag[]>([]);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  
+  const { favorites, toggleFavorite, isFavorite } = useFavorites();
+  const { history, addToHistory, clearHistory } = useMealHistory();
+  const { toast } = useToast();
 
-  const allDishes = [
-    {
-      title: "Phở Bò Truyền Thống",
-      image: phoImage,
-      rating: 5,
-      difficulty: "Dễ làm",
-      time: "45 phút",
-      category: "Món Chính",
-      description: "Món phở bò truyền thống với nước dùng được ninh từ xương trong nhiều giờ, thơm ngon đậm đà.",
-      servings: 4,
-      calories: 450,
-      ingredients: [
-        "500g xương bò",
-        "300g thịt bò",
-        "200g bánh phở",
-        "Hành tây, gừng",
-        "Hành lá, ngò gai, rau thơm",
-        "Gia vị: hồi, quế, thảo quả, muối, đường, nước mắm",
-      ],
-      steps: [
-        "Rửa sạch xương bò, blanch qua nước sôi để loại bỏ tạp chất",
-        "Nướng hành tây và gừng cho thơm",
-        "Ninh xương cùng gia vị trong 3-4 tiếng",
-        "Luộc thịt bò, thái lát mỏng",
-        "Trụng bánh phở, cho vào tô cùng thịt bò",
-        "Chan nước dùng nóng, thêm rau thơm và gia vị",
-      ],
-    },
-    {
-      title: "Cơm Tấm Sườn Nướng",
-      image: comTamImage,
-      rating: 5,
-      difficulty: "Trung bình",
-      time: "30 phút",
-      category: "Món Chính",
-      description: "Cơm tấm với sườn nướng thơm lừng, trứng ốp la và đồ chua ngon miệng.",
-      servings: 2,
-      calories: 650,
-      ingredients: [
-        "300g sườn non",
-        "2 chén cơm tấm",
-        "2 quả trứng",
-        "Đồ chua: cà rốt, củ cải",
-        "Gia vị ướp: tỏi, sả, mật ong, nước mắm, dầu hào",
-      ],
-      steps: [
-        "Ướp sườn với tỏi băm, sả băm, mật ong, nước mắm, dầu hào trong 30 phút",
-        "Nướng sườn trên than hồng hoặc lò nướng cho chín vàng đều",
-        "Chiên trứng ốp la",
-        "Nấu cơm tấm",
-        "Bày đĩa với cơm, sườn, trứng và đồ chua",
-      ],
-    },
-    {
-      title: "Gỏi Cuốn Tôm Thịt",
-      image: goiCuonImage,
-      rating: 4,
-      difficulty: "Dễ làm",
-      time: "20 phút",
-      category: "Món Khai Vị",
-      description: "Gỏi cuốn tươi mát với tôm, thịt và rau thơm, chấm nước mắm chua ngọt.",
-      servings: 4,
-      calories: 180,
-      ingredients: [
-        "200g tôm",
-        "100g thịt ba chỉ",
-        "Bánh tráng",
-        "Bún, xà lách, húng quế, rau thơm",
-        "Nước chấm: nước mắm, đường, tỏi, ớt, chanh",
-      ],
-      steps: [
-        "Luộc tôm và thịt, để nguội",
-        "Rửa sạch rau, để ráo",
-        "Nhúng bánh tráng qua nước ấm",
-        "Đặt rau, bún, tôm, thịt lên bánh tráng rồi cuốn lại",
-        "Pha nước chấm chua ngọt",
-      ],
-    },
-    {
-      title: "Bánh Mì Thịt Nướng",
-      image: banhMiImage,
-      rating: 5,
-      difficulty: "Dễ làm",
-      time: "15 phút",
-      category: "Ăn Sáng",
-      description: "Bánh mì giòn rụm với thịt nướng thơm, pate, đồ chua và rau thơm.",
-      servings: 2,
-      calories: 420,
-      ingredients: [
-        "2 ổ bánh mì",
-        "150g thịt nướng",
-        "Pate",
-        "Đồ chua, rau thơm",
-        "Tương ớt, tương đen",
-      ],
-      steps: [
-        "Nướng bánh mì cho giòn",
-        "Phết pate lên bánh",
-        "Xếp thịt nướng, đồ chua, rau thơm",
-        "Thêm tương ớt và tương đen theo khẩu vị",
-      ],
-    },
-    {
-      title: "Mì Xào Hải Sản",
-      image: phoImage,
-      rating: 5,
-      difficulty: "Trung bình",
-      time: "25 phút",
-      category: "Bữa Tối",
-      description: "Mì xào giòn với hải sản tươi ngon và rau củ đầy màu sắc.",
-      servings: 3,
-      calories: 520,
-      ingredients: [
-        "300g mì sợi lớn",
-        "200g hải sản (tôm, mực, sò)",
-        "Rau củ: cà rốt, cải thảo, hành tây",
-        "Gia vị: dầu hào, nước tương, tỏi",
-      ],
-      steps: [
-        "Luộc mì, để ráo",
-        "Sơ chế hải sản",
-        "Phi thơm tỏi, xào hải sản",
-        "Thêm rau củ xào chung",
-        "Cho mì vào xào đều, nêm nếm",
-      ],
-    },
-    {
-      title: "Chả Giò Rế",
-      image: chaGioImage,
-      rating: 4,
-      difficulty: "Khó",
-      time: "60 phút",
-      category: "Món Khai Vị",
-      description: "Chả giò giòn tan với nhân thịt rau củ thơm ngon đặc trưng.",
-      servings: 6,
-      calories: 280,
-      ingredients: [
-        "300g thịt lợn xay",
-        "100g tôm khô",
-        "Miến, nấm mèo, cà rốt",
-        "Bánh đa nem",
-        "Rau sống để ăn kèm",
-      ],
-      steps: [
-        "Trộn thịt với tôm khô, miến, rau củ",
-        "Nêm gia vị",
-        "Gói chả giò",
-        "Chiên vàng giòn",
-        "Dùng kèm với rau sống và nước mắm",
-      ],
-    },
-    {
-      title: "Bún Bò Nam Bộ",
-      image: bunBoImage,
-      rating: 5,
-      difficulty: "Dễ làm",
-      time: "30 phút",
-      category: "Bữa Trưa",
-      description: "Bún bò với thịt bò xào thơm lừng, rau thơm và đậu phộng rang.",
-      servings: 3,
-      calories: 480,
-      ingredients: [
-        "300g thịt bò",
-        "200g bún tươi",
-        "Rau sống: xà lách, húng quế, rau răm",
-        "Đậu phộng rang, hành phi",
-        "Nước mắm pha",
-      ],
-      steps: [
-        "Ướp thịt bò với gia vị",
-        "Xào thịt bò cho chín",
-        "Trụng bún",
-        "Bày bún, rau, thịt bò vào bát",
-        "Rắc đậu phộng, hành phi, chan nước mắm",
-      ],
-    },
-    {
-      title: "Gỏi Cuốn Chay",
-      image: goiCuonImage,
-      rating: 4,
-      difficulty: "Dễ làm",
-      time: "20 phút",
-      category: "Ăn Chay",
-      description: "Gỏi cuốn chay với đậu phụ và rau củ tươi mát, lành mạnh.",
-      servings: 4,
-      calories: 150,
-      ingredients: [
-        "200g đậu phụ",
-        "Bánh tráng",
-        "Bún, rau sống",
-        "Nước chấm chay",
-      ],
-      steps: [
-        "Chiên đậu phụ vàng giòn",
-        "Chuẩn bị rau và bún",
-        "Cuốn gỏi cuốn với bánh tráng",
-        "Chấm nước tương hoặc nước mắm chay",
-      ],
-    },
-  ];
+  const getRandomDish = (tags?: DishTag[]) => {
+    const filteredDishes = tags && tags.length > 0
+      ? allDishes.filter(dish => tags.some(tag => dish.tags.includes(tag)))
+      : allDishes;
+    
+    if (filteredDishes.length === 0) {
+      toast({
+        title: "Không tìm thấy món ăn",
+        description: "Thử bỏ bớt filter nhé!",
+        variant: "destructive",
+      });
+      return null;
+    }
+    
+    return filteredDishes[Math.floor(Math.random() * filteredDishes.length)];
+  };
 
-  const favoriteDishes = allDishes.slice(0, 4);
-  const recipeDiscovery = allDishes.slice(4, 8);
+  const handleRandomize = () => {
+    const dish = getRandomDish(selectedTags.length > 0 ? selectedTags : undefined);
+    if (dish) {
+      setSelectedDish(dish);
+      setIsRandomModalOpen(true);
+      addToHistory(dish.id, dish.title);
+    }
+  };
 
-  const handleDishClick = async (dish: any) => {
-    setSelectedDish(dish);
-    setIsDetailOpen(true);
-
-    // Track view if user is logged in
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      await supabase.from('dish_views').insert({
-        user_id: user.id,
-        dish_title: dish.title,
-        dish_category: dish.category
+  const handleMoodSelect = (mood: string) => {
+    let moodTags: DishTag[] = [];
+    switch (mood) {
+      case "quick":
+        moodTags = ["quick"];
+        break;
+      case "healthy":
+        moodTags = ["healthy"];
+        break;
+      case "comfort":
+        moodTags = ["soup", "rice"];
+        break;
+      case "light":
+        moodTags = ["healthy", "vegetarian"];
+        break;
+      case "special":
+        moodTags = ["vietnamese"];
+        break;
+    }
+    
+    const dish = getRandomDish(moodTags);
+    if (dish) {
+      setSelectedDish(dish);
+      setIsRandomModalOpen(true);
+      addToHistory(dish.id, dish.title);
+      toast({
+        title: "Gợi ý theo mood của bạn! 🎭",
+        description: `Món ${dish.title} phù hợp với tâm trạng của bạn`,
       });
     }
   };
 
-  const handleRandomDish = () => {
-    const random = allDishes[Math.floor(Math.random() * allDishes.length)];
-    setRandomDish(random);
-    setIsRandomOpen(true);
+  const handleTagToggle = (tag: DishTag) => {
+    setSelectedTags(prev =>
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
   };
 
-  const handleShuffleRandom = () => {
-    const random = allDishes[Math.floor(Math.random() * allDishes.length)];
-    setRandomDish(random);
+  const handleDishClick = (dish: Dish) => {
+    setSelectedDish(dish);
+    setIsDetailModalOpen(true);
   };
+
+  const filteredDishes = allDishes.filter(dish => {
+    if (showFavoritesOnly && !isFavorite(dish.id)) return false;
+    if (selectedTags.length === 0) return true;
+    return selectedTags.some(tag => dish.tags.includes(tag));
+  });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
-      <Hero />
+      
+      <Hero onRandomize={handleRandomize} />
 
-      {/* AI Recommendations Section */}
-      <AIRecommendations />
+      <main className="flex-1 container mx-auto px-4 py-12 space-y-12">
+        {/* Quick Actions */}
+        <div className="flex flex-wrap gap-3 justify-center">
+          <Button
+            variant={showFavoritesOnly ? "default" : "outline"}
+            onClick={() => {
+              setShowFavoritesOnly(!showFavoritesOnly);
+              setShowHistory(false);
+            }}
+            className="rounded-full"
+          >
+            <Heart className={`mr-2 h-4 w-4 ${showFavoritesOnly ? "fill-current" : ""}`} />
+            Món Yêu Thích ({favorites.length})
+          </Button>
+          
+          <Button
+            variant={showHistory ? "default" : "outline"}
+            onClick={() => {
+              setShowHistory(!showHistory);
+              setShowFavoritesOnly(false);
+            }}
+            className="rounded-full"
+          >
+            <History className="mr-2 h-4 w-4" />
+            Lịch Sử ({history.length})
+          </Button>
 
-      {/* Favorite Dishes Section */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="mb-8">
-          <h2 className="mb-2 text-3xl font-bold text-foreground">
-            Món Ăn Được Yêu Thích
-          </h2>
-          <p className="text-muted-foreground">
-            Những món ăn được nhiều người yêu thích nhất
-          </p>
+          {history.length > 0 && (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                clearHistory();
+                toast({ title: "Đã xóa lịch sử!" });
+              }}
+              className="rounded-full"
+            >
+              Xóa Lịch Sử
+            </Button>
+          )}
         </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {favoriteDishes.map((dish, index) => (
-            <DishCard 
-              key={index} 
-              {...dish}
-              onClick={() => handleDishClick(dish)}
-            />
-          ))}
-        </div>
-      </section>
 
-      {/* Recipe Discovery Section */}
-      <section className="bg-muted/30 py-16">
-        <div className="container mx-auto px-4">
-          <div className="mb-8">
-            <h2 className="mb-2 text-3xl font-bold text-foreground">
-              Khám Phá Công Thức
-            </h2>
-            <p className="text-muted-foreground">
-              Học nấu những món ăn ngon tại nhà
-            </p>
+        {/* History View */}
+        {showHistory && (
+          <div className="space-y-4">
+            <h2 className="text-3xl font-bold text-foreground">📅 Lịch sử món đã ăn</h2>
+            {history.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">
+                Chưa có lịch sử. Hãy thử random món nhé!
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {history.slice(0, 20).map((record, index) => {
+                  const date = new Date(record.timestamp);
+                  return (
+                    <div
+                      key={`${record.dishId}-${index}`}
+                      className="flex items-center justify-between p-4 bg-card border border-border rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      <div>
+                        <p className="font-semibold text-foreground">{record.dishTitle}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {date.toLocaleDateString("vi-VN")} - {date.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {recipeDiscovery.map((dish, index) => (
-              <DishCard 
-                key={index} 
-                {...dish}
-                onClick={() => handleDishClick(dish)}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
+        )}
 
-      {/* Tips Section */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="mb-8 text-center">
-          <h2 className="mb-2 text-3xl font-bold text-foreground">
-            Gợi Ý Theo Thời Gian
-          </h2>
-          <p className="text-muted-foreground">
-            Chọn món ăn phù hợp với từng bữa trong ngày
-          </p>
-        </div>
-        <div className="grid gap-6 md:grid-cols-3">
-          <button
-            onClick={handleRandomDish}
-            className="rounded-2xl border border-border bg-card p-6 text-center transition-all hover:scale-105 hover:shadow-lg"
-          >
-            <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-accent/10">
-              <span className="text-3xl">☀️</span>
+        {/* Main Content */}
+        {!showHistory && (
+          <>
+            {/* Mood Section */}
+            <div id="mood-section">
+              <MoodSelector onMoodSelect={handleMoodSelect} />
             </div>
-            <h3 className="mb-2 text-xl font-semibold text-foreground">Bữa Sáng</h3>
-            <p className="mb-4 text-muted-foreground">
-              Phở, bánh mì, xôi... để bắt đầu ngày mới
-            </p>
-          </button>
-          <button
-            onClick={handleRandomDish}
-            className="rounded-2xl border border-border bg-card p-6 text-center transition-all hover:scale-105 hover:shadow-lg"
-          >
-            <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-              <span className="text-3xl">🌤️</span>
-            </div>
-            <h3 className="mb-2 text-xl font-semibold text-foreground">Bữa Trưa</h3>
-            <p className="mb-4 text-muted-foreground">
-              Cơm tấm, bún, mì... no lâu và ngon miệng
-            </p>
-          </button>
-          <button
-            onClick={handleRandomDish}
-            className="rounded-2xl border border-border bg-card p-6 text-center transition-all hover:scale-105 hover:shadow-lg"
-          >
-            <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-secondary/10">
-              <span className="text-3xl">🌙</span>
-            </div>
-            <h3 className="mb-2 text-xl font-semibold text-foreground">Bữa Tối</h3>
-            <p className="mb-4 text-muted-foreground">
-              Lẩu, nướng, xào... sum họp bên gia đình
-            </p>
-          </button>
-        </div>
-      </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border bg-muted/30 py-8">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-muted-foreground">
-            © 2024 Hôm Nay Ăn Gì. Khám phá thế giới ẩm thực Việt Nam.
-          </p>
-        </div>
-      </footer>
+            {/* Filter Section */}
+            <FilterSection selectedTags={selectedTags} onTagToggle={handleTagToggle} />
+
+            {/* Stats */}
+            {history.length > 0 && (
+              <StatsSection history={history} favorites={favorites} />
+            )}
+
+            {/* Dishes Grid */}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-3xl font-bold text-foreground">
+                  {showFavoritesOnly ? "❤️ Món Yêu Thích" : "🍜 Tất cả món ăn"}
+                </h2>
+                <p className="text-muted-foreground">
+                  {filteredDishes.length} món
+                </p>
+              </div>
+
+              {filteredDishes.length === 0 ? (
+                <div className="text-center py-16 space-y-4">
+                  <Sparkles className="h-16 w-16 mx-auto text-muted-foreground" />
+                  <p className="text-lg text-muted-foreground">
+                    {showFavoritesOnly
+                      ? "Chưa có món yêu thích. Hãy thêm vào nhé!"
+                      : "Không tìm thấy món ăn phù hợp."}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredDishes.map((dish) => (
+                    <div key={dish.id} className="relative group">
+                      <DishCard
+                        {...dish}
+                        onClick={() => handleDishClick(dish)}
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm hover:bg-background z-10"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(dish.id);
+                          toast({
+                            title: isFavorite(dish.id) ? "Đã bỏ yêu thích" : "Đã thêm vào yêu thích!",
+                            description: dish.title,
+                          });
+                        }}
+                      >
+                        <Heart
+                          className={`h-5 w-5 ${
+                            isFavorite(dish.id)
+                              ? "fill-primary text-primary"
+                              : "text-muted-foreground"
+                          }`}
+                        />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </main>
+
+      <Footer />
 
       {/* Modals */}
       {selectedDish && (
-        <DishDetailModal
-          isOpen={isDetailOpen}
-          onClose={() => setIsDetailOpen(false)}
-          dish={selectedDish}
-        />
-      )}
-
-      {randomDish && (
-        <RandomDishModal
-          isOpen={isRandomOpen}
-          onClose={() => setIsRandomOpen(false)}
-          dish={randomDish}
-          onShuffle={handleShuffleRandom}
-        />
+        <>
+          <RandomDishModal
+            isOpen={isRandomModalOpen}
+            onClose={() => setIsRandomModalOpen(false)}
+            dish={selectedDish}
+            onShuffle={() => {
+              const newDish = getRandomDish(selectedTags.length > 0 ? selectedTags : undefined);
+              if (newDish) {
+                setSelectedDish(newDish);
+                addToHistory(newDish.id, newDish.title);
+              }
+            }}
+          />
+          
+          <DishDetailModal
+            isOpen={isDetailModalOpen}
+            onClose={() => setIsDetailModalOpen(false)}
+            dish={{
+              ...selectedDish,
+              servings: 2,
+              calories: selectedDish.calories || 400,
+              ingredients: [
+                "Nguyên liệu 1",
+                "Nguyên liệu 2",
+                "Nguyên liệu 3",
+              ],
+              steps: [
+                "Bước 1: Chuẩn bị nguyên liệu",
+                "Bước 2: Chế biến",
+                "Bước 3: Hoàn thành",
+              ],
+            }}
+          />
+        </>
       )}
     </div>
   );
