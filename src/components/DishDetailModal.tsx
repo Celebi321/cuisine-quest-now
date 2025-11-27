@@ -3,11 +3,14 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Clock, ChefHat, Star, Users, Flame } from "lucide-react";
 import { Separator } from "./ui/separator";
+import { RatingSection } from "./RatingSection";
+import { CommentSection } from "./CommentSection";
 
 interface DishDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   dish: {
+    id?: string;
     title: string;
     image: string;
     rating: number;
@@ -136,6 +139,19 @@ export const DishDetailModal = ({ isOpen, onClose, dish }: DishDetailModalProps)
                 ))}
               </ol>
             </div>
+          )}
+
+          <Separator />
+
+          {/* User Ratings & Comments */}
+          {dish.id && (
+            <>
+              <RatingSection dishId={dish.id} />
+              
+              <Separator />
+              
+              <CommentSection dishId={dish.id} />
+            </>
           )}
 
           {/* Action Buttons */}
