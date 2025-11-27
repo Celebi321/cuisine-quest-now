@@ -27,7 +27,7 @@ const Index = () => {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showMeals, setShowMeals] = useState(false);
+  const [showMeals, setShowMeals] = useState(true);
   
   const { favorites, toggleFavorite, isFavorite } = useFavorites();
   const { history, addToHistory, clearHistory } = useMealHistory();
@@ -147,7 +147,7 @@ const Index = () => {
         onSearchChange={setSearchQuery}
       />
 
-      <main className="flex-1 container mx-auto px-4 py-12 space-y-12">
+      <main className="flex-1 container mx-auto px-4 py-8 space-y-8">
         {/* Quick Actions */}
         <div className="flex flex-wrap gap-3 justify-center">
           <Button
@@ -156,7 +156,7 @@ const Index = () => {
             className="rounded-full"
           >
             <UtensilsCrossed className="mr-2 h-4 w-4" />
-            {showMeals ? "Xem Món Ăn" : "Xem Bữa Ăn"}
+            {showMeals ? "Xem Từng Món" : "Xem Bữa Ăn"}
           </Button>
 
           <Button
