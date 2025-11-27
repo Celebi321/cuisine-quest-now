@@ -12,7 +12,7 @@ interface HeroProps {
 
 export const Hero = ({ onRandomize, onRandomMeal, searchValue, onSearchChange }: HeroProps) => {
   return (
-    <div className="relative w-full py-12 md:py-16 px-4 bg-gradient-to-b from-background to-muted/30 overflow-hidden">
+    <div className="relative w-full py-8 md:py-12 px-4 bg-gradient-to-b from-background to-muted/30 overflow-hidden">
       {/* Subtle decorative elements */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-secondary/5 rounded-full blur-3xl" />
@@ -20,7 +20,7 @@ export const Hero = ({ onRandomize, onRandomMeal, searchValue, onSearchChange }:
       <div className="container mx-auto text-center space-y-6 max-w-2xl relative z-10">
         {/* Logo */}
         <div className="flex justify-center mb-4 animate-fade-in">
-          <img src={logo} alt="Souzy Logo" className="h-20 w-20 md:h-24 md:w-24 drop-shadow-lg" />
+          <img src={logo} alt="Souzy Logo" className="h-20 w-20 md:h-24 md:w-24 drop-shadow-lg opacity-90 mix-blend-multiply dark:mix-blend-screen dark:opacity-80" />
         </div>
         
         <div className="space-y-3">
