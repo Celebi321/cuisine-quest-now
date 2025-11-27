@@ -20,7 +20,7 @@ export const Hero = ({ onRandomize, onRandomMeal, searchValue, onSearchChange }:
       <div className="container mx-auto text-center space-y-6 max-w-2xl relative z-10">
         {/* Logo */}
         <div className="flex justify-center mb-4 animate-fade-in">
-          <img src={logo} alt="Souzy Logo" className="h-20 w-20 md:h-24 md:w-24 drop-shadow-lg opacity-90 mix-blend-multiply dark:mix-blend-screen dark:opacity-80" />
+          <img src={logo} alt="Souzy Logo" className="h-20 w-20 md:h-24 md:w-24 opacity-40 mix-blend-multiply dark:mix-blend-screen dark:opacity-30" />
         </div>
         
         <div className="space-y-3">
