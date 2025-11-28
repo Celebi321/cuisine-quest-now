@@ -92,6 +92,54 @@ export type Database = {
         }
         Relationships: []
       }
+      dishes: {
+        Row: {
+          calories: number
+          category: string
+          cost_level: number
+          created_at: string
+          description: string
+          difficulty: string
+          id: string
+          image: string
+          rating: number
+          tags: string[]
+          time: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          calories: number
+          category: string
+          cost_level: number
+          created_at?: string
+          description: string
+          difficulty: string
+          id?: string
+          image: string
+          rating?: number
+          tags?: string[]
+          time: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          calories?: number
+          category?: string
+          cost_level?: number
+          created_at?: string
+          description?: string
+          difficulty?: string
+          id?: string
+          image?: string
+          rating?: number
+          tags?: string[]
+          time?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

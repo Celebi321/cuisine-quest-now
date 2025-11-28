@@ -13,11 +13,13 @@ import { Footer } from "@/components/Footer";
 import { allDishes, Dish, DishTag, predefinedMeals, Meal } from "@/lib/dishesData";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useMealHistory } from "@/hooks/useMealHistory";
+import { useDishes } from "@/hooks/useDishes";
 import { Button } from "@/components/ui/button";
 import { Heart, History, Sparkles, UtensilsCrossed } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
+  const { data: dishes = allDishes, isLoading } = useDishes();
   const [isRandomModalOpen, setIsRandomModalOpen] = useState(false);
   const [isRandomMealModalOpen, setIsRandomMealModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -35,8 +37,8 @@ const Index = () => {
 
   const getRandomDish = (tags?: DishTag[]) => {
     const filteredDishes = tags && tags.length > 0
-      ? allDishes.filter(dish => tags.some(tag => dish.tags.includes(tag)))
-      : allDishes;
+      ? dishes.filter(dish => tags.some(tag => dish.tags.includes(tag)))
+      : dishes;
     
     if (filteredDishes.length === 0) {
       toast({
@@ -121,7 +123,7 @@ const Index = () => {
     setIsDetailModalOpen(true);
   };
 
-  const filteredDishes = allDishes.filter(dish => {
+  const filteredDishes = dishes.filter(dish => {
     if (showFavoritesOnly && !isFavorite(dish.id)) return false;
     if (searchQuery && !dish.title.toLowerCase().includes(searchQuery.toLowerCase()) && 
         !dish.description.toLowerCase().includes(searchQuery.toLowerCase())) return false;
@@ -148,8 +150,15 @@ const Index = () => {
       />
 
       <main className="flex-1 container mx-auto px-4 py-8 space-y-8">
-        {/* Quick Actions */}
-        <div className="flex flex-wrap gap-3 justify-center">
+        {isLoading ? (
+          <div className="text-center py-16">
+            <Sparkles className="h-16 w-16 mx-auto text-muted-foreground animate-pulse" />
+            <p className="text-lg text-muted-foreground mt-4">Đang tải món ăn...</p>
+          </div>
+        ) : (
+          <>
+            {/* Quick Actions */}
+            <div className="flex flex-wrap gap-3 justify-center">
           <Button
             variant={showMeals ? "default" : "outline"}
             onClick={() => setShowMeals(!showMeals)}
@@ -320,6 +329,8 @@ const Index = () => {
             </div>
           </>
         )}
+        </> 
+      )}
       </main>
 
       <Footer />
