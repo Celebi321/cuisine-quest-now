@@ -1,11 +1,15 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { NavLink } from "./NavLink";
 import { Button } from "./ui/button";
-import { Menu, X, Home, User } from "lucide-react";
+import { Menu, X, Home, User, LogOut } from "lucide-react";
 import logo from "@/assets/logo.png";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, isAdmin, signOut } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-lg supports-[backdrop-filter]:bg-background/60">
@@ -46,17 +50,37 @@ export const Navbar = () => {
             >
               Blog
             </NavLink>
-            <NavLink
-              to="/admin"
-              className="text-foreground/80 transition-colors hover:text-primary"
-              activeClassName="text-primary font-semibold"
-            >
-              Admin
-            </NavLink>
-            <Button variant="default" size="sm">
-              <User className="mr-2 h-4 w-4" />
-              Đăng Nhập
-            </Button>
+            {isAdmin && (
+              <NavLink
+                to="/admin"
+                className="text-foreground/80 transition-colors hover:text-primary"
+                activeClassName="text-primary font-semibold"
+              >
+                Admin
+              </NavLink>
+            )}
+            {user ? (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={async () => {
+                  await signOut();
+                  navigate("/");
+                }}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Đăng Xuất
+              </Button>
+            ) : (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => navigate("/auth")}
+              >
+                <User className="mr-2 h-4 w-4" />
+                Đăng Nhập
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -109,18 +133,44 @@ export const Navbar = () => {
               >
                 Blog
               </NavLink>
-              <NavLink
-                to="/admin"
-                className="text-foreground/80 transition-colors hover:text-primary"
-                activeClassName="text-primary font-semibold"
-                onClick={() => setIsOpen(false)}
-              >
-                Admin
-              </NavLink>
-              <Button variant="default" size="sm" className="w-full">
-                <User className="mr-2 h-4 w-4" />
-                Đăng Nhập
-              </Button>
+              {isAdmin && (
+                <NavLink
+                  to="/admin"
+                  className="text-foreground/80 transition-colors hover:text-primary"
+                  activeClassName="text-primary font-semibold"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Admin
+                </NavLink>
+              )}
+              {user ? (
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="w-full"
+                  onClick={async () => {
+                    await signOut();
+                    navigate("/");
+                    setIsOpen(false);
+                  }}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Đăng Xuất
+                </Button>
+              ) : (
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => {
+                    navigate("/auth");
+                    setIsOpen(false);
+                  }}
+                >
+                  <User className="mr-2 h-4 w-4" />
+                  Đăng Nhập
+                </Button>
+              )}
             </div>
           </div>
         )}
