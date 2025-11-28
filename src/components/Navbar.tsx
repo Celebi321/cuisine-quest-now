@@ -46,6 +46,13 @@ export const Navbar = () => {
             >
               Blog
             </NavLink>
+            <NavLink
+              to="/admin"
+              className="text-foreground/80 transition-colors hover:text-primary"
+              activeClassName="text-primary font-semibold"
+            >
+              Admin
+            </NavLink>
             <Button variant="default" size="sm">
               <User className="mr-2 h-4 w-4" />
               Đăng Nhập
@@ -101,6 +108,14 @@ export const Navbar = () => {
                 onClick={() => setIsOpen(false)}
               >
                 Blog
+              </NavLink>
+              <NavLink
+                to="/admin"
+                className="text-foreground/80 transition-colors hover:text-primary"
+                activeClassName="text-primary font-semibold"
+                onClick={() => setIsOpen(false)}
+              >
+                Admin
               </NavLink>
               <Button variant="default" size="sm" className="w-full">
                 <User className="mr-2 h-4 w-4" />
