@@ -9,6 +9,7 @@ import { DishDetailModal } from "@/components/DishDetailModal";
 import { FilterSection } from "@/components/FilterSection";
 import { MoodSelector } from "@/components/MoodSelector";
 import { StatsSection } from "@/components/StatsSection";
+import { RecommendedDishes } from "@/components/RecommendedDishes";
 import { Footer } from "@/components/Footer";
 import { allDishes, Dish, DishTag, predefinedMeals, Meal } from "@/lib/dishesData";
 import { useFavorites } from "@/hooks/useFavorites";
@@ -247,6 +248,9 @@ const Index = () => {
 
             {/* Filter Section */}
             <FilterSection selectedTags={selectedTags} onTagToggle={handleTagToggle} />
+
+            {/* Recommended Dishes */}
+            <RecommendedDishes />
 
             {/* Stats */}
             {history.length > 0 && (
