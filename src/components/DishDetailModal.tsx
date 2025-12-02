@@ -1,10 +1,13 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { Clock, ChefHat, Star, Users, Flame } from "lucide-react";
+import { Clock, ChefHat, Star, Users, Flame, Plus } from "lucide-react";
 import { Separator } from "./ui/separator";
 import { RatingSection } from "./RatingSection";
 import { CommentSection } from "./CommentSection";
+import { useMealLogs } from "@/hooks/useMealLogs";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 interface DishDetailModalProps {
   isOpen: boolean;
@@ -26,6 +29,23 @@ interface DishDetailModalProps {
 }
 
 export const DishDetailModal = ({ isOpen, onClose, dish }: DishDetailModalProps) => {
+  const { addMeal, isAddingMeal } = useMealLogs();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleAddToToday = () => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+
+    addMeal({
+      dish_id: dish.id || dish.title,
+      dish_title: dish.title,
+      dish_category: dish.category,
+    });
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
@@ -156,7 +176,14 @@ export const DishDetailModal = ({ isOpen, onClose, dish }: DishDetailModalProps)
 
           {/* Action Buttons */}
           <div className="flex gap-3">
-            <Button className="flex-1">Thêm vào yêu thích</Button>
+            <Button 
+              className="flex-1 gap-2" 
+              onClick={handleAddToToday}
+              disabled={isAddingMeal}
+            >
+              <Plus className="h-4 w-4" />
+              Thêm vào hôm nay
+            </Button>
             <Button variant="outline" className="flex-1">
               Chia sẻ
             </Button>

@@ -30,6 +30,13 @@ export const Navbar = () => {
               Món Ăn Ngon
             </NavLink>
             <NavLink
+              to="/today"
+              className="text-foreground/80 transition-colors hover:text-primary"
+              activeClassName="text-primary font-semibold"
+            >
+              Hôm Nay
+            </NavLink>
+            <NavLink
               to="/recipes"
               className="text-foreground/80 transition-colors hover:text-primary"
               activeClassName="text-primary font-semibold"
@@ -108,6 +115,14 @@ export const Navbar = () => {
                 onClick={() => setIsOpen(false)}
               >
                 Món Ăn Ngon
+              </NavLink>
+              <NavLink
+                to="/today"
+                className="text-foreground/80 transition-colors hover:text-primary"
+                activeClassName="text-primary font-semibold"
+                onClick={() => setIsOpen(false)}
+              >
+                Hôm Nay
               </NavLink>
               <NavLink
                 to="/recipes"
