@@ -17,6 +17,8 @@ export type DishTag =
   | "soup"
   | "street-food";
 
+export type Region = "north" | "central" | "south";
+
 export interface Dish {
   id: string;
   title: string;
@@ -29,9 +31,16 @@ export interface Dish {
   category: string;
   calories?: number;
   costLevel: "low" | "mid" | "high";
+  region?: Region;
   lastEaten?: Date;
   favorite?: boolean;
 }
+
+// Helper to extract time in minutes
+export const getTimeInMinutes = (timeStr: string): number => {
+  const match = timeStr.match(/(\d+)/);
+  return match ? parseInt(match[1], 10) : 0;
+};
 
 export const allDishes: Dish[] = [
   {
@@ -46,6 +55,7 @@ export const allDishes: Dish[] = [
     category: "Món Việt",
     calories: 450,
     costLevel: "mid",
+    region: "north",
   },
   {
     id: "banh-mi",
@@ -59,6 +69,7 @@ export const allDishes: Dish[] = [
     category: "Món Việt",
     calories: 350,
     costLevel: "low",
+    region: "south",
   },
   {
     id: "bun-bo-hue",
@@ -72,6 +83,7 @@ export const allDishes: Dish[] = [
     category: "Món Việt",
     calories: 500,
     costLevel: "mid",
+    region: "central",
   },
   {
     id: "com-tam",
@@ -85,6 +97,7 @@ export const allDishes: Dish[] = [
     category: "Món Việt",
     calories: 600,
     costLevel: "mid",
+    region: "south",
   },
   {
     id: "goi-cuon",
@@ -98,6 +111,7 @@ export const allDishes: Dish[] = [
     category: "Món Việt",
     calories: 200,
     costLevel: "low",
+    region: "south",
   },
   {
     id: "cha-gio",
@@ -111,12 +125,12 @@ export const allDishes: Dish[] = [
     category: "Món Việt",
     calories: 400,
     costLevel: "mid",
+    region: "south",
   },
-  // More dishes
   {
     id: "bun-cha",
     title: "Bún Chả",
-    image: phoBo, // reuse image
+    image: phoBo,
     description: "Bún chả Hà Nội với thịt nướng thơm phức",
     tags: ["vietnamese", "noodles", "healthy"],
     time: "15 phút",
@@ -125,6 +139,7 @@ export const allDishes: Dish[] = [
     category: "Món Việt",
     calories: 450,
     costLevel: "mid",
+    region: "north",
   },
   {
     id: "mi-quang",
@@ -138,6 +153,7 @@ export const allDishes: Dish[] = [
     category: "Món Việt",
     calories: 480,
     costLevel: "mid",
+    region: "central",
   },
   {
     id: "xoi-man",
@@ -151,6 +167,7 @@ export const allDishes: Dish[] = [
     category: "Món Việt",
     calories: 400,
     costLevel: "low",
+    region: "north",
   },
   {
     id: "banh-xeo",
@@ -164,6 +181,7 @@ export const allDishes: Dish[] = [
     category: "Món Việt",
     calories: 500,
     costLevel: "mid",
+    region: "south",
   },
   {
     id: "hu-tieu",
@@ -177,6 +195,7 @@ export const allDishes: Dish[] = [
     category: "Món Việt",
     calories: 420,
     costLevel: "mid",
+    region: "south",
   },
   {
     id: "cao-lau",
@@ -190,6 +209,7 @@ export const allDishes: Dish[] = [
     category: "Món Việt",
     calories: 450,
     costLevel: "mid",
+    region: "central",
   },
 ];
 

@@ -6,12 +6,12 @@ import { MealCard } from "@/components/MealCard";
 import { RandomDishModal } from "@/components/RandomDishModal";
 import { RandomMealModal } from "@/components/RandomMealModal";
 import { DishDetailModal } from "@/components/DishDetailModal";
-import { FilterSection } from "@/components/FilterSection";
+import { AdvancedFilterSection, FilterState } from "@/components/AdvancedFilterSection";
 import { MoodSelector } from "@/components/MoodSelector";
 import { StatsSection } from "@/components/StatsSection";
 import { RecommendedDishes } from "@/components/RecommendedDishes";
 import { Footer } from "@/components/Footer";
-import { allDishes, Dish, DishTag, predefinedMeals, Meal } from "@/lib/dishesData";
+import { allDishes, Dish, DishTag, predefinedMeals, Meal, getTimeInMinutes } from "@/lib/dishesData";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useMealHistory } from "@/hooks/useMealHistory";
 import { useDishes } from "@/hooks/useDishes";
@@ -26,7 +26,13 @@ const Index = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
-  const [selectedTags, setSelectedTags] = useState<DishTag[]>([]);
+  const [filters, setFilters] = useState<FilterState>({
+    selectedTags: [],
+    cookingTime: "all",
+    calorieRange: [0, 1000],
+    costLevel: "all",
+    region: "all",
+  });
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -37,11 +43,11 @@ const Index = () => {
   const { toast } = useToast();
 
   const getRandomDish = (tags?: DishTag[]) => {
-    const filteredDishes = tags && tags.length > 0
+    const filteredList = tags && tags.length > 0
       ? dishes.filter(dish => tags.some(tag => dish.tags.includes(tag)))
       : dishes;
     
-    if (filteredDishes.length === 0) {
+    if (filteredList.length === 0) {
       toast({
         title: "Không tìm thấy món ăn",
         description: "Thử bỏ bớt filter nhé!",
@@ -50,7 +56,7 @@ const Index = () => {
       return null;
     }
     
-    return filteredDishes[Math.floor(Math.random() * filteredDishes.length)];
+    return filteredList[Math.floor(Math.random() * filteredList.length)];
   };
 
   const getRandomMeal = () => {
@@ -60,7 +66,7 @@ const Index = () => {
   };
 
   const handleRandomize = () => {
-    const dish = getRandomDish(selectedTags.length > 0 ? selectedTags : undefined);
+    const dish = getRandomDish(filters.selectedTags.length > 0 ? filters.selectedTags : undefined);
     if (dish) {
       setSelectedDish(dish);
       setIsRandomModalOpen(true);
@@ -113,12 +119,6 @@ const Index = () => {
     }
   };
 
-  const handleTagToggle = (tag: DishTag) => {
-    setSelectedTags(prev =>
-      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-    );
-  };
-
   const handleDishClick = (dish: Dish) => {
     setSelectedDish(dish);
     setIsDetailModalOpen(true);
@@ -128,15 +128,35 @@ const Index = () => {
     if (showFavoritesOnly && !isFavorite(dish.id)) return false;
     if (searchQuery && !dish.title.toLowerCase().includes(searchQuery.toLowerCase()) && 
         !dish.description.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-    if (selectedTags.length === 0) return true;
-    return selectedTags.some(tag => dish.tags.includes(tag));
+    
+    // Tag filter
+    if (filters.selectedTags.length > 0 && !filters.selectedTags.some(tag => dish.tags.includes(tag))) return false;
+    
+    // Cooking time filter
+    if (filters.cookingTime !== "all") {
+      const maxTime = parseInt(filters.cookingTime);
+      const dishTime = getTimeInMinutes(dish.time);
+      if (dishTime > maxTime) return false;
+    }
+    
+    // Cost level filter
+    if (filters.costLevel !== "all" && dish.costLevel !== filters.costLevel) return false;
+    
+    // Region filter
+    if (filters.region !== "all" && dish.region !== filters.region) return false;
+    
+    // Calorie filter
+    const dishCalories = dish.calories || 0;
+    if (dishCalories < filters.calorieRange[0] || dishCalories > filters.calorieRange[1]) return false;
+    
+    return true;
   });
 
   const filteredMeals = predefinedMeals.filter(meal => {
     if (searchQuery && !meal.name.toLowerCase().includes(searchQuery.toLowerCase()) && 
         !meal.description.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-    if (selectedTags.length === 0) return true;
-    return selectedTags.some(tag => meal.tags.includes(tag));
+    if (filters.selectedTags.length === 0) return true;
+    return filters.selectedTags.some(tag => meal.tags.includes(tag));
   });
 
   return (
@@ -247,7 +267,7 @@ const Index = () => {
             </div>
 
             {/* Filter Section */}
-            <FilterSection selectedTags={selectedTags} onTagToggle={handleTagToggle} />
+            <AdvancedFilterSection filters={filters} onFiltersChange={setFilters} />
 
             {/* Recommended Dishes */}
             <RecommendedDishes />
@@ -347,7 +367,7 @@ const Index = () => {
             onClose={() => setIsRandomModalOpen(false)}
             dish={selectedDish}
             onShuffle={() => {
-              const newDish = getRandomDish(selectedTags.length > 0 ? selectedTags : undefined);
+              const newDish = getRandomDish(filters.selectedTags.length > 0 ? filters.selectedTags : undefined);
               if (newDish) {
                 setSelectedDish(newDish);
                 addToHistory(newDish.id, newDish.title);
