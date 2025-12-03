@@ -36,6 +36,7 @@ export const useDishes = () => {
         category: dish.category,
         calories: dish.calories,
         costLevel: dish.cost_level === 1 ? "low" : dish.cost_level === 2 ? "mid" : "high",
+        region: undefined,
         lastEaten: undefined,
         favorite: false,
       }));
