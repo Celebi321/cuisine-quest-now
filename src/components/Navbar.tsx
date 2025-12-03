@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { NavLink } from "./NavLink";
 import { Button } from "./ui/button";
-import { Menu, X, Home, User, LogOut } from "lucide-react";
+import { Menu, X, Home, User, LogOut, BarChart3 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -35,6 +35,13 @@ export const Navbar = () => {
               activeClassName="text-primary font-semibold"
             >
               Hôm Nay
+            </NavLink>
+            <NavLink
+              to="/statistics"
+              className="text-foreground/80 transition-colors hover:text-primary"
+              activeClassName="text-primary font-semibold"
+            >
+              Thống Kê
             </NavLink>
             <NavLink
               to="/recipes"
@@ -123,6 +130,14 @@ export const Navbar = () => {
                 onClick={() => setIsOpen(false)}
               >
                 Hôm Nay
+              </NavLink>
+              <NavLink
+                to="/statistics"
+                className="text-foreground/80 transition-colors hover:text-primary"
+                activeClassName="text-primary font-semibold"
+                onClick={() => setIsOpen(false)}
+              >
+                Thống Kê
               </NavLink>
               <NavLink
                 to="/recipes"
