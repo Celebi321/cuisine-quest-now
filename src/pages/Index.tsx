@@ -6,7 +6,7 @@ import { MealCard } from "@/components/MealCard";
 import { RandomDishModal } from "@/components/RandomDishModal";
 import { RandomMealModal } from "@/components/RandomMealModal";
 import { DishDetailModal } from "@/components/DishDetailModal";
-import { AdvancedFilterSection, FilterState } from "@/components/AdvancedFilterSection";
+import { CompactFilterSection, FilterState } from "@/components/CompactFilterSection";
 import { MoodSelector } from "@/components/MoodSelector";
 import { StatsSection } from "@/components/StatsSection";
 import { RecommendedDishes } from "@/components/RecommendedDishes";
@@ -16,10 +16,8 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { useMealHistory } from "@/hooks/useMealHistory";
 import { useDishes } from "@/hooks/useDishes";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Heart, History, Sparkles, UtensilsCrossed, SlidersHorizontal } from "lucide-react";
+import { Heart, History, Sparkles, UtensilsCrossed } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Badge } from "@/components/ui/badge";
 
 const Index = () => {
   const { data: dishes = allDishes, isLoading } = useDishes();
@@ -280,25 +278,8 @@ const Index = () => {
               <MoodSelector onMoodSelect={handleMoodSelect} />
             </div>
 
-            {/* Filter Button */}
-            <div className="flex justify-center">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="rounded-full gap-2">
-                    <SlidersHorizontal className="h-4 w-4" />
-                    Bộ lọc
-                    {(filters.selectedTags.length > 0 || filters.cookingTime !== "all" || filters.costLevel !== "all" || filters.region !== "all" || filters.calorieRange[0] > 0 || filters.calorieRange[1] < 1000 || filters.sortBy !== "default") && (
-                      <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
-                        {filters.selectedTags.length + (filters.cookingTime !== "all" ? 1 : 0) + (filters.costLevel !== "all" ? 1 : 0) + (filters.region !== "all" ? 1 : 0) + ((filters.calorieRange[0] > 0 || filters.calorieRange[1] < 1000) ? 1 : 0) + (filters.sortBy !== "default" ? 1 : 0)}
-                      </Badge>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[90vw] max-w-2xl p-0" align="center">
-                  <AdvancedFilterSection filters={filters} onFiltersChange={setFilters} />
-                </PopoverContent>
-              </Popover>
-            </div>
+            {/* Compact Filter */}
+            <CompactFilterSection filters={filters} onFiltersChange={setFilters} />
 
             {/* Recommended Dishes */}
             <RecommendedDishes />
