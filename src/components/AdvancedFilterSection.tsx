@@ -3,8 +3,11 @@ import { Badge } from "./ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Slider } from "./ui/slider";
 import { Label } from "./ui/label";
-import { Clock, Flame, DollarSign, MapPin, Utensils, X } from "lucide-react";
+import { Clock, Flame, DollarSign, MapPin, Utensils, X, Star, ArrowUpDown } from "lucide-react";
 import { Button } from "./ui/button";
+import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
+
+export type SortOption = "default" | "rating" | "calories" | "time";
 
 export interface FilterState {
   selectedTags: DishTag[];
@@ -12,6 +15,7 @@ export interface FilterState {
   calorieRange: [number, number];
   costLevel: string;
   region: string;
+  sortBy: SortOption;
 }
 
 interface AdvancedFilterSectionProps {
@@ -70,6 +74,7 @@ export const AdvancedFilterSection = ({ filters, onFiltersChange }: AdvancedFilt
       calorieRange: [0, 1000],
       costLevel: "all",
       region: "all",
+      sortBy: "default",
     });
   };
 
@@ -79,7 +84,15 @@ export const AdvancedFilterSection = ({ filters, onFiltersChange }: AdvancedFilt
     filters.costLevel !== "all" || 
     filters.region !== "all" ||
     filters.calorieRange[0] > 0 || 
-    filters.calorieRange[1] < 1000;
+    filters.calorieRange[1] < 1000 ||
+    filters.sortBy !== "default";
+
+  const sortOptions: { value: SortOption; label: string; icon: React.ReactNode }[] = [
+    { value: "default", label: "Mặc định", icon: null },
+    { value: "rating", label: "Rating cao nhất", icon: <Star className="h-4 w-4" /> },
+    { value: "calories", label: "Calories thấp nhất", icon: <Flame className="h-4 w-4" /> },
+    { value: "time", label: "Nấu nhanh nhất", icon: <Clock className="h-4 w-4" /> },
+  ];
 
   return (
     <div className="w-full glass-card border-2 rounded-2xl p-6 shadow-lg space-y-6">
@@ -99,6 +112,34 @@ export const AdvancedFilterSection = ({ filters, onFiltersChange }: AdvancedFilt
             Xóa bộ lọc
           </Button>
         )}
+      </div>
+
+      {/* Sort Options */}
+      <div className="space-y-3">
+        <Label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+          <ArrowUpDown className="h-4 w-4" />
+          Sắp xếp theo
+        </Label>
+        <ToggleGroup
+          type="single"
+          value={filters.sortBy}
+          onValueChange={(value) => {
+            if (value) onFiltersChange({ ...filters, sortBy: value as SortOption });
+          }}
+          className="flex flex-wrap gap-2 justify-start"
+        >
+          {sortOptions.map(({ value, label, icon }) => (
+            <ToggleGroupItem
+              key={value}
+              value={value}
+              aria-label={label}
+              className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground px-3 py-1.5 text-sm font-medium flex items-center gap-1.5"
+            >
+              {icon}
+              {label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
       </div>
 
       {/* Quick Tags */}
