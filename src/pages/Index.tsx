@@ -32,6 +32,7 @@ const Index = () => {
     calorieRange: [0, 1000],
     costLevel: "all",
     region: "all",
+    sortBy: "default",
   });
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -150,6 +151,17 @@ const Index = () => {
     if (dishCalories < filters.calorieRange[0] || dishCalories > filters.calorieRange[1]) return false;
     
     return true;
+  }).sort((a, b) => {
+    switch (filters.sortBy) {
+      case "rating":
+        return (b.rating || 0) - (a.rating || 0);
+      case "calories":
+        return (a.calories || 0) - (b.calories || 0);
+      case "time":
+        return getTimeInMinutes(a.time) - getTimeInMinutes(b.time);
+      default:
+        return 0;
+    }
   });
 
   const filteredMeals = predefinedMeals.filter(meal => {
