@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
-import { Search, Clock, Users, ChefHat, Star, BookOpen } from "lucide-react";
+import { Search, Clock, Users, ChefHat, Star, BookOpen, Heart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecipeDetailModal } from "@/components/RecipeDetailModal";
+import { useFavorites } from "@/hooks/useFavorites";
+import { Button } from "@/components/ui/button";
 
 import phoImg from "@/assets/pho.jpg";
 import bunBoImg from "@/assets/bun-bo.jpg";
@@ -101,6 +103,7 @@ const Recipes = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Tất cả");
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   const filteredRecipes = recipes.filter((recipe) => {
     const matchesSearch = recipe.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -198,9 +201,26 @@ const Recipes = () => {
                   className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                <Badge className="absolute top-3 right-3 bg-background/90 text-foreground">
+                <Badge className="absolute top-3 left-3 bg-background/90 text-foreground">
                   {recipe.category}
                 </Badge>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-2 right-2 h-8 w-8 bg-background/80 hover:bg-background"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleFavorite(`recipe-${recipe.id}`);
+                  }}
+                >
+                  <Heart 
+                    className={`h-4 w-4 ${
+                      isFavorite(`recipe-${recipe.id}`) 
+                        ? "fill-red-500 text-red-500" 
+                        : "text-muted-foreground"
+                    }`} 
+                  />
+                </Button>
                 <div className="absolute bottom-3 left-3 flex items-center gap-1 text-white">
                   <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                   <span className="font-medium">{recipe.rating}</span>
