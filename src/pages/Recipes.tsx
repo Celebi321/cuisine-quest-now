@@ -97,19 +97,24 @@ const recipes: Recipe[] = [
   },
 ];
 
-const categories = ["Tất cả", "Món nước", "Cơm", "Khai vị", "Bánh"];
+const categories = ["Tất cả", "Yêu thích", "Món nước", "Cơm", "Khai vị", "Bánh"];
 
 const Recipes = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Tất cả");
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
-  const { isFavorite, toggleFavorite } = useFavorites();
+  const { favorites, isFavorite, toggleFavorite } = useFavorites();
 
   const filteredRecipes = recipes.filter((recipe) => {
     const matchesSearch = recipe.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "Tất cả" || recipe.category === selectedCategory;
+    const matchesCategory = 
+      selectedCategory === "Tất cả" || 
+      (selectedCategory === "Yêu thích" && isFavorite(`recipe-${recipe.id}`)) ||
+      recipe.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  const favoriteCount = recipes.filter(r => isFavorite(`recipe-${r.id}`)).length;
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -171,7 +176,19 @@ const Recipes = () => {
                   value={cat}
                   className="rounded-full px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                 >
-                  {cat}
+                  {cat === "Yêu thích" ? (
+                    <span className="flex items-center gap-1.5">
+                      <Heart className="h-3.5 w-3.5" />
+                      {cat}
+                      {favoriteCount > 0 && (
+                        <Badge variant="secondary" className="h-5 px-1.5 text-xs">
+                          {favoriteCount}
+                        </Badge>
+                      )}
+                    </span>
+                  ) : (
+                    cat
+                  )}
                 </TabsTrigger>
               ))}
             </TabsList>
@@ -259,13 +276,21 @@ const Recipes = () => {
         {filteredRecipes.length === 0 && (
           <div className="text-center py-12">
             <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-              <Search className="h-8 w-8 text-muted-foreground" />
+              {selectedCategory === "Yêu thích" ? (
+                <Heart className="h-8 w-8 text-muted-foreground" />
+              ) : (
+                <Search className="h-8 w-8 text-muted-foreground" />
+              )}
             </div>
             <h3 className="text-lg font-medium text-foreground mb-2">
-              Không tìm thấy công thức
+              {selectedCategory === "Yêu thích" 
+                ? "Chưa có công thức yêu thích"
+                : "Không tìm thấy công thức"}
             </h3>
             <p className="text-muted-foreground">
-              Thử tìm kiếm với từ khóa khác
+              {selectedCategory === "Yêu thích"
+                ? "Nhấn vào icon trái tim để lưu công thức yêu thích"
+                : "Thử tìm kiếm với từ khóa khác"}
             </p>
           </div>
         )}
