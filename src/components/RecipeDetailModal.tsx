@@ -1,10 +1,11 @@
-import { Clock, Users, ChefHat, Star, X, Share2 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Clock, Users, ChefHat, Star, Share2, Heart } from "lucide-react";
+import { Dialog, DialogContent } from "./ui/dialog";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 import { RatingSection } from "./RatingSection";
 import { CommentSection } from "./CommentSection";
+import { useFavorites } from "@/hooks/useFavorites";
 
 interface Recipe {
   id: string;
@@ -25,7 +26,12 @@ interface RecipeDetailModalProps {
 }
 
 export const RecipeDetailModal = ({ isOpen, onClose, recipe }: RecipeDetailModalProps) => {
+  const { isFavorite, toggleFavorite } = useFavorites();
+  
   if (!recipe) return null;
+
+  const recipeId = `recipe-${recipe.id}`;
+  const favorite = isFavorite(recipeId);
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -111,6 +117,14 @@ export const RecipeDetailModal = ({ isOpen, onClose, recipe }: RecipeDetailModal
 
           {/* Actions */}
           <div className="flex gap-3 pt-4">
+            <Button 
+              onClick={() => toggleFavorite(recipeId)} 
+              variant={favorite ? "default" : "outline"}
+              className="flex-1"
+            >
+              <Heart className={`h-4 w-4 mr-2 ${favorite ? "fill-current" : ""}`} />
+              {favorite ? "Đã lưu" : "Lưu yêu thích"}
+            </Button>
             <Button onClick={handleShare} variant="outline" className="flex-1">
               <Share2 className="h-4 w-4 mr-2" />
               Chia sẻ
