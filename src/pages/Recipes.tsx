@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
-import { Search, Clock, Users, ChefHat, Star, BookOpen, Filter } from "lucide-react";
+import { Search, Clock, Users, ChefHat, Star, BookOpen } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RecipeDetailModal } from "@/components/RecipeDetailModal";
 
 import phoImg from "@/assets/pho.jpg";
 import bunBoImg from "@/assets/bun-bo.jpg";
@@ -100,6 +100,7 @@ const categories = ["Tất cả", "Món nước", "Cơm", "Khai vị", "Bánh"];
 const Recipes = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Tất cả");
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
 
   const filteredRecipes = recipes.filter((recipe) => {
     const matchesSearch = recipe.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -187,6 +188,7 @@ const Recipes = () => {
           {filteredRecipes.map((recipe) => (
             <Card
               key={recipe.id}
+              onClick={() => setSelectedRecipe(recipe)}
               className="group overflow-hidden border-primary/10 hover:border-primary/30 hover:shadow-lg transition-all duration-300 cursor-pointer"
             >
               <div className="relative aspect-video overflow-hidden">
@@ -257,6 +259,13 @@ const Recipes = () => {
           </p>
         </div>
       </footer>
+
+      {/* Recipe Detail Modal */}
+      <RecipeDetailModal
+        isOpen={!!selectedRecipe}
+        onClose={() => setSelectedRecipe(null)}
+        recipe={selectedRecipe}
+      />
     </div>
   );
 };
