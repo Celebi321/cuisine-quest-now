@@ -11,8 +11,8 @@ import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
 import Today from "./pages/Today";
 import Statistics from "./pages/Statistics";
+import Favorites from "./pages/Favorites";
 import NotFound from "./pages/NotFound";
-
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -29,6 +29,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/today" element={<Today />} />
           <Route path="/statistics" element={<Statistics />} />
+          <Route path="/favorites" element={<Favorites />} />
           <Route path="/admin" element={<Admin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
