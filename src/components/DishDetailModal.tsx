@@ -5,10 +5,10 @@ import { Clock, ChefHat, Star, Users, Flame, Plus } from "lucide-react";
 import { Separator } from "./ui/separator";
 import { RatingSection } from "./RatingSection";
 import { CommentSection } from "./CommentSection";
+import { ShareButton } from "./ShareButton";
 import { useMealLogs } from "@/hooks/useMealLogs";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-
 interface DishDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -184,9 +184,12 @@ export const DishDetailModal = ({ isOpen, onClose, dish }: DishDetailModalProps)
               <Plus className="h-4 w-4" />
               Thêm vào hôm nay
             </Button>
-            <Button variant="outline" className="flex-1">
-              Chia sẻ
-            </Button>
+            <ShareButton 
+              title={dish.title}
+              description={dish.description}
+              image={dish.image}
+              className="flex-1"
+            />
           </div>
         </div>
       </DialogContent>
