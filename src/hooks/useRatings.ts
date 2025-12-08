@@ -24,25 +24,31 @@ export const useRatings = (dishId: string) => {
   const fetchRatings = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("dish_ratings")
-        .select("*")
-        .eq("dish_id", dishId);
-
-      if (error) throw error;
-
-      setRatings(data || []);
       
-      // Calculate average
-      if (data && data.length > 0) {
-        const avg = data.reduce((sum, r) => sum + r.rating, 0) / data.length;
-        setAverageRating(Math.round(avg * 10) / 10);
+      // Sử dụng database function để lấy điểm tổng hợp (không lộ user_id)
+      const { data: statsData, error: statsError } = await supabase
+        .rpc("get_dish_rating_stats", { dish_id_param: dishId });
+
+      if (statsError) throw statsError;
+
+      if (statsData && statsData.length > 0) {
+        setAverageRating(Number(statsData[0].average_rating) || 0);
+        setRatings(new Array(Number(statsData[0].total_ratings) || 0).fill({} as Rating));
+      } else {
+        setAverageRating(0);
+        setRatings([]);
       }
 
-      // Check if current user has rated
+      // Chỉ lấy đánh giá của user hiện tại (RLS đã hạn chế)
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const userRatingData = data?.find(r => r.user_id === user.id);
+        const { data: userRatingData } = await supabase
+          .from("dish_ratings")
+          .select("rating")
+          .eq("dish_id", dishId)
+          .eq("user_id", user.id)
+          .maybeSingle();
+        
         setUserRating(userRatingData?.rating || null);
       }
     } catch (error) {
