@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MessageCircle, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
-import { useComments } from "@/hooks/useComments";
+import { useComments, MAX_COMMENT_LENGTH, MIN_COMMENT_LENGTH } from "@/hooks/useComments";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
 
 interface CommentSectionProps {
   dishId: string;
@@ -43,10 +42,21 @@ export const CommentSection = ({ dishId }: CommentSectionProps) => {
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
           className="min-h-[80px] resize-none"
+          maxLength={MAX_COMMENT_LENGTH}
         />
+        <div className="flex items-center justify-between">
+          <span className={`text-xs ${newComment.length > MAX_COMMENT_LENGTH * 0.9 ? 'text-destructive' : 'text-muted-foreground'}`}>
+            {newComment.length}/{MAX_COMMENT_LENGTH} ký tự
+          </span>
+          {newComment.trim().length > 0 && newComment.trim().length < MIN_COMMENT_LENGTH && (
+            <span className="text-xs text-destructive">
+              Tối thiểu {MIN_COMMENT_LENGTH} ký tự
+            </span>
+          )}
+        </div>
         <Button 
           onClick={handleSubmit}
-          disabled={!newComment.trim()}
+          disabled={!newComment.trim() || newComment.trim().length < MIN_COMMENT_LENGTH}
           className="w-full sm:w-auto"
         >
           Gửi bình luận
