@@ -249,6 +249,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_dish_rating_stats: {
+        Args: { dish_id_param: string }
+        Returns: {
+          average_rating: number
+          total_ratings: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
