@@ -94,24 +94,101 @@ export default function Admin() {
         return;
       }
 
-      const dishes = jsonData.map((row) => ({
-        title: row.title,
-        image: row.image,
-        description: row.description,
-        tags: row.tags.split(",").map((tag) => tag.trim()),
-        time: row.time,
-        difficulty: row.difficulty,
-        rating: Number(row.rating) || 0,
-        category: row.category,
-        calories: Number(row.calories) || 0,
-        cost_level: Number(row.cost_level) || 1,
-      }));
+      // Validate và xử lý từng dòng
+      const validDishes: Array<{
+        title: string;
+        image: string;
+        description: string;
+        tags: string[];
+        time: string;
+        difficulty: string;
+        rating: number;
+        category: string;
+        calories: number;
+        cost_level: number;
+      }> = [];
+      const errors: string[] = [];
 
-      const { error } = await supabase.from("dishes").insert(dishes);
+      for (let i = 0; i < jsonData.length; i++) {
+        const row = jsonData[i];
+        const rowNumber = i + 2; // Excel row (1-indexed + header)
+
+        // Chuẩn bị dữ liệu để validate
+        const rowData = {
+          title: String(row.title || "").trim(),
+          image: String(row.image || "").trim(),
+          description: String(row.description || "").trim(),
+          tags: String(row.tags || "").trim(),
+          time: String(row.time || "").trim(),
+          difficulty: String(row.difficulty || "").trim(),
+          category: String(row.category || "").trim(),
+          rating: Number(row.rating) || 0,
+          calories: Number(row.calories) || 0,
+          cost_level: Number(row.cost_level) || 1,
+        };
+
+        // Validate bằng zod schema
+        const result = dishSchema.safeParse(rowData);
+
+        if (result.success) {
+          validDishes.push({
+            title: result.data.title,
+            image: result.data.image,
+            description: result.data.description,
+            tags: result.data.tags.split(",").map((tag) => tag.trim()).filter(Boolean),
+            time: result.data.time,
+            difficulty: result.data.difficulty,
+            rating: result.data.rating,
+            category: result.data.category,
+            calories: result.data.calories,
+            cost_level: result.data.cost_level,
+          });
+        } else {
+          // Thu thập lỗi cho dòng này
+          const fieldErrors = result.error.errors
+            .map((err) => `${err.path.join(".")}: ${err.message}`)
+            .join("; ");
+          errors.push(`Dòng ${rowNumber}: ${fieldErrors}`);
+        }
+      }
+
+      // Hiển thị lỗi nếu có
+      if (errors.length > 0) {
+        const maxErrorsToShow = 5;
+        const displayErrors = errors.slice(0, maxErrorsToShow);
+        const remainingCount = errors.length - maxErrorsToShow;
+
+        toast.error(
+          `Có ${errors.length} dòng lỗi:\n${displayErrors.join("\n")}${
+            remainingCount > 0 ? `\n... và ${remainingCount} lỗi khác` : ""
+          }`,
+          { duration: 10000 }
+        );
+
+        // Nếu tất cả đều lỗi, dừng lại
+        if (validDishes.length === 0) {
+          return;
+        }
+
+        // Hỏi người dùng có muốn tiếp tục với các dòng hợp lệ không
+        const confirmContinue = window.confirm(
+          `Có ${validDishes.length}/${jsonData.length} dòng hợp lệ. Bạn có muốn tiếp tục thêm các món hợp lệ không?`
+        );
+        if (!confirmContinue) {
+          return;
+        }
+      }
+
+      // Insert các món hợp lệ
+      const { error } = await supabase.from("dishes").insert(validDishes);
 
       if (error) throw error;
 
-      toast.success(`Đã thêm ${dishes.length} món ăn thành công!`);
+      toast.success(
+        `Đã thêm ${validDishes.length} món ăn thành công!${
+          errors.length > 0 ? ` (${errors.length} dòng bị bỏ qua do lỗi)` : ""
+        }`
+      );
       e.target.value = "";
     } catch (error: any) {
       toast.error("Lỗi khi upload: " + error.message);
