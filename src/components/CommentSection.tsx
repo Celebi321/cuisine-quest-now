@@ -1,26 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { MessageCircle, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { useComments, MAX_COMMENT_LENGTH, MIN_COMMENT_LENGTH } from "@/hooks/useComments";
-import { supabase } from "@/integrations/supabase/client";
 
 interface CommentSectionProps {
   dishId: string;
 }
 
 export const CommentSection = ({ dishId }: CommentSectionProps) => {
-  const { comments, loading, addComment, deleteComment } = useComments(dishId);
+  const { comments, loading, addComment, deleteComment, isOwner } = useComments(dishId);
   const [newComment, setNewComment] = useState("");
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUserId(user?.id || null);
-    };
-    getUser();
-  }, []);
 
   const handleSubmit = async () => {
     if (!newComment.trim()) return;
@@ -90,7 +80,7 @@ export const CommentSection = ({ dishId }: CommentSectionProps) => {
                     })}
                   </p>
                 </div>
-                {currentUserId === comment.user_id && (
+                {isOwner(comment.id) && (
                   <Button
                     variant="ghost"
                     size="icon"
