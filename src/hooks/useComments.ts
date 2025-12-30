@@ -26,16 +26,22 @@ const sanitizeInput = (input: string): string => {
     .trim();
 };
 
-export interface Comment {
+// Interface cho view công khai (không có user_id)
+export interface PublicComment {
   id: string;
-  user_id: string;
   dish_id: string;
   comment: string;
   created_at: string;
 }
 
+// Interface cho bình luận đầy đủ (dùng nội bộ)
+export interface Comment extends PublicComment {
+  user_id?: string;
+}
+
 export const useComments = (dishId: string) => {
   const [comments, setComments] = useState<Comment[]>([]);
+  const [userCommentIds, setUserCommentIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -46,15 +52,36 @@ export const useComments = (dishId: string) => {
   const fetchComments = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("dish_comments")
-        .select("*")
-        .eq("dish_id", dishId)
-        .order("created_at", { ascending: false });
+      
+      // Lấy bình luận từ view công khai (không có user_id)
+      const { data: publicData, error: publicError } = await supabase
+        .rpc('get_public_comments', { dish_id_param: dishId }) as { data: PublicComment[] | null, error: any };
 
-      if (error) throw error;
+      if (publicError) {
+        // Fallback: dùng bảng gốc nếu RPC chưa có
+        const { data, error } = await supabase
+          .from("dish_comments")
+          .select("id, dish_id, comment, created_at")
+          .eq("dish_id", dishId)
+          .order("created_at", { ascending: false });
+        
+        if (error) throw error;
+        setComments(data || []);
+      } else {
+        setComments(publicData || []);
+      }
 
-      setComments(data || []);
+      // Lấy danh sách comment IDs của user hiện tại (nếu đã đăng nhập)
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: userComments } = await supabase
+          .from("dish_comments")
+          .select("id")
+          .eq("dish_id", dishId)
+          .eq("user_id", user.id);
+        
+        setUserCommentIds(new Set(userComments?.map(c => c.id) || []));
+      }
     } catch (error) {
       console.error("Error fetching comments:", error);
     } finally {
@@ -140,11 +167,17 @@ export const useComments = (dishId: string) => {
     }
   };
 
+  // Kiểm tra user có phải là chủ comment không
+  const isOwner = (commentId: string): boolean => {
+    return userCommentIds.has(commentId);
+  };
+
   return {
     comments,
     loading,
     addComment,
     deleteComment,
+    isOwner,
     refetch: fetchComments,
   };
 };

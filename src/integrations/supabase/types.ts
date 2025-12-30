@@ -246,7 +246,27 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      dish_comments_public: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          dish_id: string | null
+          id: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          dish_id?: string | null
+          id?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          dish_id?: string | null
+          id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_dish_rating_stats: {
@@ -254,6 +274,15 @@ export type Database = {
         Returns: {
           average_rating: number
           total_ratings: number
+        }[]
+      }
+      get_public_comments: {
+        Args: { dish_id_param: string }
+        Returns: {
+          comment: string
+          created_at: string
+          dish_id: string
+          id: string
         }[]
       }
       has_role: {
