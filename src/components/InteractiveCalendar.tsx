@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { format, startOfWeek, addDays, isSameDay } from "date-fns";
 import { vi } from "date-fns/locale";
 import {
@@ -21,7 +21,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { GripVertical, Plus, X, Utensils } from "lucide-react";
+import { GripVertical, Plus, X, Utensils, Flame, Coins } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface MealItem {
@@ -30,6 +30,9 @@ export interface MealItem {
   dishTitle: string;
   mealType: "breakfast" | "lunch" | "dinner";
   date: Date;
+  calories?: number;
+  costLevel?: number;
+  category?: string;
 }
 
 interface DaySlotProps {
@@ -70,7 +73,7 @@ const SortableMeal = ({ meal, onRemove }: SortableMealProps) => {
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex items-center gap-2 p-2 bg-background rounded-lg border group",
+        "flex items-center gap-2 p-2 bg-background rounded-lg border group touch-manipulation",
         isDragging && "opacity-50 shadow-lg"
       )}
     >
@@ -82,10 +85,26 @@ const SortableMeal = ({ meal, onRemove }: SortableMealProps) => {
         <GripVertical className="h-4 w-4 text-muted-foreground" />
       </button>
       <span className="text-sm">{mealTypeLabels[meal.mealType].icon}</span>
-      <span className="flex-1 text-sm font-medium truncate">{meal.dishTitle}</span>
+      <div className="flex-1 min-w-0">
+        <span className="text-sm font-medium truncate block">{meal.dishTitle}</span>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          {meal.calories && (
+            <span className="flex items-center gap-0.5">
+              <Flame className="h-3 w-3" />
+              {meal.calories}
+            </span>
+          )}
+          {meal.costLevel && (
+            <span className="flex items-center gap-0.5">
+              <Coins className="h-3 w-3" />
+              {"₫".repeat(meal.costLevel)}
+            </span>
+          )}
+        </div>
+      </div>
       <button
         onClick={() => onRemove(meal.id)}
-        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/10 rounded text-destructive transition-opacity"
+        className="md:opacity-0 md:group-hover:opacity-100 p-1 hover:bg-destructive/10 rounded text-destructive transition-opacity"
       >
         <X className="h-4 w-4" />
       </button>
@@ -96,36 +115,48 @@ const SortableMeal = ({ meal, onRemove }: SortableMealProps) => {
 const DaySlot = ({ date, meals, onAddMeal, onRemoveMeal }: DaySlotProps) => {
   const isToday = isSameDay(date, new Date());
 
+  // Calculate daily totals
+  const dailyCalories = meals.reduce((sum, m) => sum + (m.calories || 0), 0);
+  const dailyCost = meals.reduce((sum, m) => sum + (m.costLevel || 0), 0);
+
   return (
     <Card className={cn("transition-all", isToday && "ring-2 ring-primary")}>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
+      <CardHeader className="pb-2 px-3 md:px-6">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <div>
-            <CardTitle className="text-base capitalize">
+            <CardTitle className="text-sm md:text-base capitalize">
               {format(date, "EEEE", { locale: vi })}
             </CardTitle>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs md:text-sm text-muted-foreground">
               {format(date, "dd/MM", { locale: vi })}
             </p>
           </div>
-          {isToday && (
-            <Badge variant="secondary" className="bg-primary text-primary-foreground">
-              Hôm nay
-            </Badge>
-          )}
+          <div className="flex items-center gap-2">
+            {dailyCalories > 0 && (
+              <Badge variant="outline" className="text-xs">
+                <Flame className="h-3 w-3 mr-1" />
+                {dailyCalories} kcal
+              </Badge>
+            )}
+            {isToday && (
+              <Badge variant="secondary" className="bg-primary text-primary-foreground text-xs">
+                Hôm nay
+              </Badge>
+            )}
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-3 px-3 md:px-6">
         {(["breakfast", "lunch", "dinner"] as const).map((mealType) => {
           const mealItems = meals.filter((m) => m.mealType === mealType);
 
           return (
             <div key={mealType} className="space-y-2">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm">
+                <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
                   <span>{mealTypeLabels[mealType].icon}</span>
                   <span className="font-medium">{mealTypeLabels[mealType].label}</span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-muted-foreground hidden sm:inline">
                     {mealTypeLabels[mealType].time}
                   </span>
                 </div>
@@ -155,10 +186,11 @@ const DaySlot = ({ date, meals, onAddMeal, onRemoveMeal }: DaySlotProps) => {
                   </div>
                 </SortableContext>
               ) : (
-                <div className="h-12 rounded-lg border-2 border-dashed border-muted flex items-center justify-center">
+                <div className="h-10 md:h-12 rounded-lg border-2 border-dashed border-muted flex items-center justify-center">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Utensils className="h-3 w-3" />
-                    <span>Kéo món vào đây</span>
+                    <span className="hidden sm:inline">Kéo món vào đây</span>
+                    <span className="sm:hidden">Thêm món</span>
                   </div>
                 </div>
               )}
@@ -221,6 +253,9 @@ export const InteractiveCalendar = ({
     onMealsChange(meals.filter((m) => m.id !== mealId));
   };
 
+  // Calculate weekly totals
+  const weeklyCalories = meals.reduce((sum, m) => sum + (m.calories || 0), 0);
+
   return (
     <DndContext
       sensors={sensors}
@@ -229,10 +264,16 @@ export const InteractiveCalendar = ({
       onDragEnd={handleDragEnd}
     >
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h2 className="text-lg md:text-xl font-semibold">
             {format(weekStart, "'Tuần' w, MMMM yyyy", { locale: vi })}
           </h2>
+          {weeklyCalories > 0 && (
+            <Badge variant="secondary" className="self-start sm:self-auto">
+              <Flame className="h-3 w-3 mr-1" />
+              Tổng: {weeklyCalories.toLocaleString()} kcal/tuần
+            </Badge>
+          )}
         </div>
 
         <div className="space-y-4">
