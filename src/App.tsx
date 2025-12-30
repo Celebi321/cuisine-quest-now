@@ -12,6 +12,8 @@ import Auth from "./pages/Auth";
 import Today from "./pages/Today";
 import Statistics from "./pages/Statistics";
 import Favorites from "./pages/Favorites";
+import Install from "./pages/Install";
+import WeeklyPlanner from "./pages/WeeklyPlanner";
 import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
@@ -30,6 +32,8 @@ const App = () => (
           <Route path="/today" element={<Today />} />
           <Route path="/statistics" element={<Statistics />} />
           <Route path="/favorites" element={<Favorites />} />
+          <Route path="/install" element={<Install />} />
+          <Route path="/weekly-planner" element={<WeeklyPlanner />} />
           <Route path="/admin" element={<Admin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
